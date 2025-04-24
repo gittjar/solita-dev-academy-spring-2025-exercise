@@ -2,6 +2,9 @@ import React from 'react';
 
 function Table({ data }) {
   return (
+    <div style={{ marginBottom: '20px' }}>
+             
+        <h2>Hourly Data</h2>
     <table border="1" cellPadding="10" style={{ borderCollapse: 'collapse', width: '100%' }}>
       <thead>
         <tr>
@@ -23,6 +26,7 @@ function Table({ data }) {
         ))}
       </tbody>
     </table>
+    </div>
   );
 }
 
