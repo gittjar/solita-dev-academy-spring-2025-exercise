@@ -1,9 +1,14 @@
+// filepath: c:\Ohjelmointi\solita-dev-academy-spring-2025-exercise\backend\server.js
 const express = require('express');
+const cors = require('cors'); // Import CORS
 const pool = require('./db');
 const path = require('path');
 
 const app = express();
 const port = 3000;
+
+// Enable CORS for all origins
+app.use(cors());
 
 // Root route
 app.get('/', (req, res) => {
@@ -18,7 +23,7 @@ app.get('/favicon.ico', (req, res) => {
 // Data route
 app.get('/data', async (req, res) => {
   try {
-    const result = await pool.query('SELECT * FROM "electricitydata"');
+    const result = await pool.query('SELECT * FROM electricitydata');
     res.json(result.rows);
   } catch (err) {
     console.error(err);
