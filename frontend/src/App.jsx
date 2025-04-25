@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Navbar from './components/Navbar';
-import MainView from './components/MainView';
 import AggregatesTable from './components/AggregatesTable';
+import Table from './components/Table';
 
 function App() {
   const [data, setData] = useState([]);
@@ -64,7 +64,7 @@ function App() {
     <Router>
       <Navbar />
       <Routes>
-  <Route path="/" element={<MainView data={data} />} />
+  <Route path="/hourly" element={<Table data={data} />} />
   <Route
     path="/aggregates"
     element={
