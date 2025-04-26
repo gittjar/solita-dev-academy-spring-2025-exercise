@@ -1,0 +1,153 @@
+import React, { useState } from 'react';
+import { useParams } from 'react-router-dom';
+
+function DateHourly({ hourlyData = [] }) {
+  const { date } = useParams();
+  const [sortConfig, setSortConfig] = useState({ key: 'hour', direction: 'asc' });
+
+  const filteredData = hourlyData.filter((item) => item.date.split('T')[0] === date);
+
+  const formatTime = (isoString) => {
+    const date = new Date(isoString);
+    return date
+      .toLocaleTimeString('fi-FI', { hour: '2-digit', minute: '2-digit' })
+      .replace(':', '.');
+  };
+
+  const sortedData = [...filteredData].sort((a, b) => {
+    if (sortConfig.key === 'hour') {
+      const timeA = new Date(a.starttime).getTime();
+      const timeB = new Date(b.starttime).getTime();
+      return sortConfig.direction === 'asc' ? timeA - timeB : timeB - timeA;
+    } else {
+      if (a[sortConfig.key] < b[sortConfig.key]) {
+        return sortConfig.direction === 'asc' ? -1 : 1;
+      }
+      if (a[sortConfig.key] > b[sortConfig.key]) {
+        return sortConfig.direction === 'asc' ? 1 : -1;
+      }
+      return 0;
+    }
+  });
+
+  const handleSort = (key) => {
+    setSortConfig((prevConfig) => ({
+      key,
+      direction: prevConfig.key === key && prevConfig.direction === 'asc' ? 'desc' : 'asc',
+    }));
+  };
+
+  const mostExpensive = filteredData.reduce(
+    (max, item) => (item.hourlyprice > max.hourlyprice ? item : max),
+    { hourlyprice: -Infinity, starttime: null }
+  );
+  const cheapest = filteredData.reduce(
+    (min, item) => (item.hourlyprice < min.hourlyprice ? item : min),
+    { hourlyprice: Infinity, starttime: null }
+  );
+
+  // Filter valid numbers only
+  const validConsumptions = filteredData.map(item => Number(item.consumptionamount)).filter(val => !isNaN(val));
+  const validProductions = filteredData.map(item => Number(item.productionamount)).filter(val => !isNaN(val));
+  const validPrices = filteredData.map(item => Number(item.hourlyprice)).filter(val => !isNaN(val));
+
+  const totalConsumption = validConsumptions.reduce((sum, val) => sum + val, 0);
+  const totalProduction = validProductions.reduce((sum, val) => sum + val, 0);
+  const averagePrice = validPrices.length > 0
+    ? validPrices.reduce((sum, val) => sum + val, 0) / validPrices.length
+    : 0;
+
+  const mostExpensiveHour =
+    mostExpensive.starttime && mostExpensive.hourlyprice !== -Infinity
+      ? `${formatTime(mostExpensive.starttime)} (${Number(mostExpensive.hourlyprice).toFixed(2)} €)`
+      : 'N/A';
+
+  const cheapestHour =
+    cheapest.starttime && cheapest.hourlyprice !== Infinity
+      ? `${formatTime(cheapest.starttime)} (${Number(cheapest.hourlyprice).toFixed(2)} €)`
+      : 'N/A';
+
+  return (
+    <section className="container mt-4">
+      <h2 className="text-center mb-4">Hourly Data for {date}</h2>
+
+      {/* Summary Card */}
+      <div className="card mb-4 shadow-sm w-50 mx-auto">
+        <div className="card-body">
+          <h5 className="card-title text-center">Summary</h5>
+          <p className="card-text">
+            <strong>Total Consumption:</strong> {totalConsumption.toFixed(2)} kWh
+          </p>
+          <p className="card-text">
+            <strong>Total Production:</strong> {totalProduction.toFixed(2)} kWh
+          </p>
+          <p className="card-text">
+            <strong>Average Price:</strong> {averagePrice.toFixed(2)} €
+          </p>
+          <p className="card-text">
+            <strong>Most Expensive Hour:</strong> {mostExpensiveHour}
+          </p>
+          <p className="card-text">
+            <strong>Cheapest Hour:</strong> {cheapestHour}
+          </p>
+        </div>
+      </div>
+
+      {sortedData.length > 0 ? (
+        <div className="table-responsive">
+          <table className="table table-bordered table-hover">
+            <thead className="thead-dark">
+              <tr>
+                <th onClick={() => handleSort('date')} style={{ cursor: 'pointer' }}>
+                  Date{' '}
+                  {sortConfig.key === 'date' && (
+                    <i className={`bi bi-caret-${sortConfig.direction === 'asc' ? 'up' : 'down'}-fill`}></i>
+                  )}
+                </th>
+                <th onClick={() => handleSort('hour')} style={{ cursor: 'pointer' }}>
+                  Hour{' '}
+                  {sortConfig.key === 'hour' && (
+                    <i className={`bi bi-caret-${sortConfig.direction === 'asc' ? 'up' : 'down'}-fill`}></i>
+                  )}
+                </th>
+                <th onClick={() => handleSort('consumptionamount')} style={{ cursor: 'pointer' }}>
+                  Consumption{' '}
+                  {sortConfig.key === 'consumptionamount' && (
+                    <i className={`bi bi-caret-${sortConfig.direction === 'asc' ? 'up' : 'down'}-fill`}></i>
+                  )}
+                </th>
+                <th onClick={() => handleSort('productionamount')} style={{ cursor: 'pointer' }}>
+                  Production{' '}
+                  {sortConfig.key === 'productionamount' && (
+                    <i className={`bi bi-caret-${sortConfig.direction === 'asc' ? 'up' : 'down'}-fill`}></i>
+                  )}
+                </th>
+                <th onClick={() => handleSort('hourlyprice')} style={{ cursor: 'pointer' }}>
+                  Price{' '}
+                  {sortConfig.key === 'hourlyprice' && (
+                    <i className={`bi bi-caret-${sortConfig.direction === 'asc' ? 'up' : 'down'}-fill`}></i>
+                  )}
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              {sortedData.map((item, index) => (
+                <tr key={index}>
+                  <td>{item.date.split('T')[0]}</td>
+                  <td>{formatTime(item.starttime)}</td>
+                  <td>{Number(item.consumptionamount || 0).toFixed(2)}</td>
+                  <td>{Number(item.productionamount || 0).toFixed(2)}</td>
+                  <td>{Number(item.hourlyprice || 0).toFixed(2)}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      ) : (
+        <p className="text-center">No data available for {date}.</p>
+      )}
+    </section>
+  );
+}
+
+export default DateHourly;

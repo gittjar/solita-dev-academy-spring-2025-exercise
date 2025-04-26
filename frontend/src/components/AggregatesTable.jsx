@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
 import Pagination from './Pagination';
 
 function AggregatesTable({ aggregates = [] }) {
@@ -76,7 +77,11 @@ function AggregatesTable({ aggregates = [] }) {
           <tbody>
             {currentAggregates.map((item) => (
               <tr key={item.date}>
-                <td>{item.date}</td>
+                <td>
+                  <Link to={`/date-hourly/${item.date}`} className="text-decoration-none">
+                    {item.date}
+                  </Link>
+                </td>
                 <td>{Number(item.totalConsumption || 0).toFixed(2)}</td>
                 <td>{Number(item.totalProduction || 0).toFixed(2)}</td>
                 <td>{Number(item.averagePrice || 0).toFixed(2)}</td>

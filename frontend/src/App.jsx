@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Navbar from './components/Navbar';
 import AggregatesTable from './components/AggregatesTable';
 import Table from './components/Table';
+import DateHourly from './components/DateHourly';
 
 function App() {
   const [data, setData] = useState([]);
@@ -74,6 +75,10 @@ function App() {
         <p>Loading aggregates...</p>
       )
     }
+  />
+  <Route
+    path="/date-hourly/:date"
+    element={<DateHourly hourlyData={data} />}
   />
 </Routes>
     </Router>
