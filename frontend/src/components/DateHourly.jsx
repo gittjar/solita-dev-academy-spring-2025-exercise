@@ -1,9 +1,11 @@
 import React, { useState } from 'react';
 import { useParams } from 'react-router-dom';
+import HourlyChart from './HourlyChart'; 
 
 function DateHourly({ hourlyData = [] }) {
   const { date } = useParams();
   const [sortConfig, setSortConfig] = useState({ key: 'hour', direction: 'asc' });
+  const [showChart, setShowChart] = useState(false);
 
   const filteredData = hourlyData.filter((item) => item.date.split('T')[0] === date);
 
@@ -12,6 +14,14 @@ function DateHourly({ hourlyData = [] }) {
     return date
       .toLocaleTimeString('fi-FI', { hour: '2-digit', minute: '2-digit' })
       .replace(':', '.');
+  };
+
+  const formatDate = (isoString) => {
+    const date = new Date(isoString);
+    const day = String(date.getDate()).padStart(2, '0');
+    const month = String(date.getMonth() + 1).padStart(2, '0'); // Months are 0-indexed
+    const year = date.getFullYear();
+    return `${day}.${month}.${year}`;
   };
 
   const sortedData = [...filteredData].sort((a, b) => {
@@ -37,16 +47,16 @@ function DateHourly({ hourlyData = [] }) {
     }));
   };
 
+  // Correct logic for most expensive and cheapest hours
   const mostExpensive = filteredData.reduce(
-    (max, item) => (item.hourlyprice > max.hourlyprice ? item : max),
+    (max, item) => (item.hourlyprice >= max.hourlyprice ? item : max),
     { hourlyprice: -Infinity, starttime: null }
   );
   const cheapest = filteredData.reduce(
-    (min, item) => (item.hourlyprice < min.hourlyprice ? item : min),
+    (min, item) => (item.hourlyprice <= min.hourlyprice ? item : min),
     { hourlyprice: Infinity, starttime: null }
   );
 
-  // Filter valid numbers only
   const validConsumptions = filteredData.map(item => Number(item.consumptionamount)).filter(val => !isNaN(val));
   const validProductions = filteredData.map(item => Number(item.productionamount)).filter(val => !isNaN(val));
   const validPrices = filteredData.map(item => Number(item.hourlyprice)).filter(val => !isNaN(val));
@@ -69,17 +79,17 @@ function DateHourly({ hourlyData = [] }) {
 
   return (
     <section className="container mt-4">
-      <h2 className="text-center mb-4">Hourly Data for {date}</h2>
+      <h2 className="text-center mb-4">Hourly Data for {formatDate(date)}</h2>
 
       {/* Summary Card */}
       <div className="card mb-4 shadow-sm w-50 mx-auto">
         <div className="card-body">
           <h5 className="card-title text-center">Summary</h5>
           <p className="card-text">
-            <strong>Total Consumption:</strong> {totalConsumption.toFixed(2)} kWh
+            <strong>Total Consumption:</strong> {totalConsumption.toFixed(2) / 1000} Mwh
           </p>
           <p className="card-text">
-            <strong>Total Production:</strong> {totalProduction.toFixed(2)} kWh
+            <strong>Total Production:</strong> {totalProduction.toFixed(2) / 1000} Mwh
           </p>
           <p className="card-text">
             <strong>Average Price:</strong> {averagePrice.toFixed(2)} €
@@ -92,6 +102,16 @@ function DateHourly({ hourlyData = [] }) {
           </p>
         </div>
       </div>
+
+      {/* Toggle button */}
+      <div className="text-center mb-3">
+        <button className="btn btn-primary" onClick={() => setShowChart(!showChart)}>
+          {showChart ? 'Hide Chart View' : 'Open Chart View'}
+        </button>
+      </div>
+
+      {/* Chart section */}
+      {showChart && <HourlyChart data={filteredData} />}
 
       {sortedData.length > 0 ? (
         <div className="table-responsive">
@@ -133,8 +153,8 @@ function DateHourly({ hourlyData = [] }) {
             <tbody>
               {sortedData.map((item, index) => (
                 <tr key={index}>
-                  <td>{item.date.split('T')[0]}</td>
-                  <td>{formatTime(item.starttime)}</td>
+                  <td>{formatDate(item.date)}</td> {/* Display the date in DD-MM-YYYY */}
+                  <td>{formatTime(item.starttime)}</td> {/* Convert starttime to HH.MM */}
                   <td>{Number(item.consumptionamount || 0).toFixed(2)}</td>
                   <td>{Number(item.productionamount || 0).toFixed(2)}</td>
                   <td>{Number(item.hourlyprice || 0).toFixed(2)}</td>
@@ -144,7 +164,7 @@ function DateHourly({ hourlyData = [] }) {
           </table>
         </div>
       ) : (
-        <p className="text-center">No data available for {date}.</p>
+        <p className="text-center">No data available for {formatDate(date)}.</p>
       )}
     </section>
   );
