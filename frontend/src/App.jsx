@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Navbar from './components/Navbar';
 import AggregatesTable from './components/AggregatesTable';
-import Table from './components/Table';
+import AllHoursDataTable from './components/AllHoursDataTable';
 import DateHourly from './components/DateHourly';
 
 function App() {
@@ -65,7 +65,7 @@ function App() {
     <Router>
       <Navbar />
       <Routes>
-  <Route path="/hourly" element={<Table data={data} />} />
+  <Route path="/hourly" element={<AllHoursDataTable data={data} />} />
   <Route
     path="/aggregates"
     element={
