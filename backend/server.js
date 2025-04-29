@@ -1,4 +1,3 @@
-// filepath: c:\Ohjelmointi\solita-dev-academy-spring-2025-exercise\backend\server.js
 const express = require('express');
 const cors = require('cors'); // Import CORS
 const pool = require('./db');
@@ -7,8 +6,12 @@ const path = require('path');
 const app = express();
 const port = 3000;
 
-// Enable CORS for all origins
-app.use(cors());
+// Enable CORS with explicit configuration
+app.use(cors({
+  origin: 'http://localhost:5173', // Replace with your frontend's URL
+  methods: ['GET', 'POST', 'PUT', 'DELETE'], // Allowed HTTP methods
+  allowedHeaders: ['Content-Type', 'Authorization'], // Allowed headers
+}));
 
 // Root route
 app.get('/', (req, res) => {
