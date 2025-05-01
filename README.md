@@ -27,12 +27,13 @@ Ensure you have the following installed on your system:
 
 * Backend API: http://localhost:3001
 * Adminer (Database Management): http://localhost:8088
--->
-- cd frontend
-- npm install
-- npm run dev
-- Local: http://localhost:5173
 
+  ```bash
+    cd frontend
+    npm install
+    npm run dev
+    ```
+* Local: http://localhost:5173
 <hr>
 
 solita-dev-academy-spring-2025-exercise/ <br>
