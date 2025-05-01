@@ -27,7 +27,7 @@ Ensure you have the following installed on your system:
 
 * Backend API: http://localhost:3001
 * Adminer (Database Management): http://localhost:8088
-
+-->
 - cd frontend
 - npm install
 - npm run dev
@@ -35,9 +35,9 @@ Ensure you have the following installed on your system:
 
 <hr>
 
-solita-dev-academy-spring-2025-exercise/
-├── backend/       # Backend service (Node.js + Express)
-├── frontend/      # Frontend service (React + Vite)
-├── db/            # Database initialization scripts
-├── [docker-compose.yml]
-└── [README.md]
+solita-dev-academy-spring-2025-exercise/ <br>
+├── backend/       # Backend service (Node.js + Express) <br>
+├── frontend/      # Frontend service (React + Vite) <br>
+├── db/            # Database initialization scripts <br>
+├── [docker-compose.yml] <br>
+└── [README.md] <br>
