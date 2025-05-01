@@ -1,4 +1,3 @@
-version: '3.1'
 services:
   db:
     image: postgres:16.0
@@ -7,9 +6,6 @@ services:
       POSTGRES_USER: academy
       POSTGRES_PASSWORD: academy
       POSTGRES_DB: electricity
-    build:
-      context: .
-      dockerfile: Dockerfile
     ports:
       - 5432:5432
 
@@ -25,7 +21,7 @@ services:
       dockerfile: Dockerfile
     restart: always
     environment:
-      DB_HOST: db
+      DB_HOST: db # Use the service name 'db' to connect to the database
       DB_PORT: 5432
       DB_USER: academy
       DB_PASSWORD: academy
@@ -34,13 +30,3 @@ services:
       - 3001:3000
     depends_on:
       - db
-
-  frontend:
-    build:
-      context: ./frontend
-      dockerfile: Dockerfile
-    restart: always
-    ports:
-      - 8080:80
-    depends_on:
-      - backend

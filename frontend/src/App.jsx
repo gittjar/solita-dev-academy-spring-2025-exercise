@@ -11,7 +11,7 @@ function App() {
 
   useEffect(() => {
     // Fetch data from the backend
-    fetch('http://localhost:3000/data')
+    fetch('http://localhost:3001/data')
       .then((response) => response.json())
       .then((data) => {
         setData(data);

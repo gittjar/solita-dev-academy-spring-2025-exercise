@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
-import HourlyChart from './HourlyChart'; 
+import HourlyChart from './HourlyChart';
+import { BiLeftArrowAlt, BiRightArrowAlt } from 'react-icons/bi';
 
 function DateHourly({ hourlyData = [] }) {
   const { date } = useParams();
@@ -19,7 +20,7 @@ function DateHourly({ hourlyData = [] }) {
   const formatDate = (isoString) => {
     const date = new Date(isoString);
     const day = String(date.getDate()).padStart(2, '0');
-    const month = String(date.getMonth() + 1).padStart(2, '0'); // Months are 0-indexed
+    const month = String(date.getMonth() + 1).padStart(2, '0');
     const year = date.getFullYear();
     return `${day}.${month}.${year}`;
   };
@@ -77,9 +78,50 @@ function DateHourly({ hourlyData = [] }) {
       ? `${formatTime(cheapest.starttime)} (${Number(cheapest.hourlyprice).toFixed(2)} €)`
       : 'N/A';
 
+  const handleNavigate = (direction) => {
+    const currentDate = new Date(date);
+    currentDate.setDate(currentDate.getDate() + (direction === 'next' ? 1 : -1));
+    const newDate = currentDate.toISOString().split('T')[0];
+    window.location.href = `/date-hourly/${newDate}`;
+  };
+
+  const getAdjacentDate = (direction) => {
+    const currentDate = new Date(date);
+    currentDate.setDate(currentDate.getDate() + (direction === 'next' ? 1 : -1));
+    return currentDate.toISOString().split('T')[0];
+  };
+
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.key === 'ArrowLeft') handleNavigate('prev');
+      if (e.key === 'ArrowRight') handleNavigate('next');
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [date, hourlyData]);
+
   return (
     <section className="container mt-4">
       <h2 className="text-center mb-4">Hourly Data for {formatDate(date)}</h2>
+
+            {/* Navigation buttons with icons */}
+            <div className="d-flex justify-content-center gap-2 mb-3">
+        <button
+          className="btn btn-outline-primary d-flex align-items-center gap-1"
+          onClick={() => handleNavigate('prev')}
+          disabled={!getAdjacentDate('prev')}
+        >
+          <BiLeftArrowAlt size={20} /> Previous
+        </button>
+        <button
+          className="btn btn-outline-primary d-flex align-items-center gap-1"
+          onClick={() => handleNavigate('next')}
+          disabled={!getAdjacentDate('next')}
+        >
+          Next <BiRightArrowAlt size={20} />
+        </button>
+      </div>
 
       {/* Summary Card */}
       <div className="card mb-4 shadow-sm w-50 mx-auto">
@@ -102,6 +144,8 @@ function DateHourly({ hourlyData = [] }) {
           </p>
         </div>
       </div>
+
+
 
       {/* Toggle button */}
       <div className="text-center mb-3">
@@ -153,11 +197,16 @@ function DateHourly({ hourlyData = [] }) {
             <tbody>
               {sortedData.map((item, index) => (
                 <tr key={index}>
-                  <td>{formatDate(item.date)}</td> {/* Display the date in DD-MM-YYYY */}
-                  <td>{formatTime(item.starttime)}</td> {/* Convert starttime to HH.MM */}
+                  <td>{formatDate(item.date)}</td>
+                  <td>{formatTime(item.starttime)}</td>
                   <td>{Number(item.consumptionamount || 0).toFixed(2)}</td>
                   <td>{Number(item.productionamount || 0).toFixed(2)}</td>
-                  <td>{Number(item.hourlyprice || 0).toFixed(2)}</td>
+                  <td>
+                    {Number(item.hourlyprice || 0).toFixed(2)}{' '}
+                    {Number(item.hourlyprice) < 0 && (
+                      <span className="badge bg-success">Negative</span>
+                    )}
+                  </td>
                 </tr>
               ))}
             </tbody>

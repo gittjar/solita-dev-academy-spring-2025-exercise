@@ -8,9 +8,9 @@ const port = 3000;
 
 // Enable CORS with explicit configuration
 app.use(cors({
-  origin: 'http://localhost:5173', // Replace with your frontend's URL
-  methods: ['GET', 'POST', 'PUT', 'DELETE'], // Allowed HTTP methods
-  allowedHeaders: ['Content-Type', 'Authorization'], // Allowed headers
+  origin: ['http://localhost:8080', 'http://localhost:5173'],
+  methods: ['GET', 'POST', 'PUT', 'DELETE'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
 }));
 
 // Root route
@@ -34,6 +34,11 @@ app.get('/data', async (req, res) => {
   }
 });
 
+// Start the server
 app.listen(port, () => {
-  console.log(`Backend running on http://localhost:${port}`);
+  console.log(`                                           
+🚀 Backend Running in Docker on Port: ${port} 
+📡 Access API at: http://localhost:${port}    
+
+  `);
 });

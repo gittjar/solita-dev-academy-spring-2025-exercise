@@ -7,14 +7,10 @@ function AggregatesTable({ aggregates = [] }) {
   const [sortConfig, setSortConfig] = useState({ key: 'date', direction: 'asc' });
   const itemsPerPage = 10;
 
-  // Sorting logic
+  // Sort logic
   const sortedAggregates = [...aggregates].sort((a, b) => {
-    if (a[sortConfig.key] < b[sortConfig.key]) {
-      return sortConfig.direction === 'asc' ? -1 : 1;
-    }
-    if (a[sortConfig.key] > b[sortConfig.key]) {
-      return sortConfig.direction === 'asc' ? 1 : -1;
-    }
+    if (a[sortConfig.key] < b[sortConfig.key]) return sortConfig.direction === 'asc' ? -1 : 1;
+    if (a[sortConfig.key] > b[sortConfig.key]) return sortConfig.direction === 'asc' ? 1 : -1;
     return 0;
   });
 
@@ -28,33 +24,55 @@ function AggregatesTable({ aggregates = [] }) {
   };
 
   const handleSort = (key) => {
-    setSortConfig((prevConfig) => ({
+    setSortConfig((prev) => ({
       key,
-      direction: prevConfig.key === key && prevConfig.direction === 'asc' ? 'desc' : 'asc',
+      direction: prev.key === key && prev.direction === 'asc' ? 'desc' : 'asc',
     }));
-    setCurrentPage(1); // Reset to the first page after sorting
+    setCurrentPage(1);
+  };
+
+  const handlePrevDay = () => {
+    if (currentPage > 1) setCurrentPage((prev) => prev - 1);
+  };
+
+  const handleNextDay = () => {
+    if (currentPage < totalPages) setCurrentPage((prev) => prev + 1);
+  };
+
+  const formatDate = (dateStr) => {
+    const options = { year: 'numeric', month: 'short', day: 'numeric' };
+    return new Date(dateStr).toLocaleDateString(undefined, options);
   };
 
   return (
     <section className="container mt-4">
-      <h2 className="text-center mb-4">Daily Aggregates</h2>
+      <h2 className="text-center mb-4">📊 Daily Aggregates</h2>
 
       {/* Summary Card */}
-      <div className="card mb-4 w-25 mx-auto shadow-sm">
+      <div className="card mb-4 w-50 mx-auto shadow-sm">
         <div className="card-body text-center">
           <h5 className="card-title">Summary</h5>
           <p className="card-text">
             <strong>Total Records:</strong> {aggregates.length}
           </p>
           <p className="card-text">
-            <strong>Current Page:</strong> {currentPage} of {totalPages}
+            <strong>Page:</strong> {currentPage} of {totalPages}
           </p>
+
+          <div className="btn-group mt-2">
+            <button className="btn btn-outline-primary" onClick={handlePrevDay} disabled={currentPage === 1}>
+              ⬅️ Previous
+            </button>
+            <button className="btn btn-outline-primary" onClick={handleNextDay} disabled={currentPage === totalPages}>
+              Next ➡️
+            </button>
+          </div>
         </div>
       </div>
 
       {/* Table */}
       <div className="table-responsive">
-        <table className="table table-bordered table-hover">
+        <table className="table table-bordered table-hover align-middle text-center">
           <thead className="thead-dark">
             <tr>
               <th onClick={() => handleSort('date')} style={{ cursor: 'pointer' }}>
@@ -67,10 +85,10 @@ function AggregatesTable({ aggregates = [] }) {
                 Total Production {sortConfig.key === 'totalProduction' ? (sortConfig.direction === 'asc' ? '▲' : '▼') : ''}
               </th>
               <th onClick={() => handleSort('averagePrice')} style={{ cursor: 'pointer' }}>
-                Average Price {sortConfig.key === 'averagePrice' ? (sortConfig.direction === 'asc' ? '▲' : '▼') : ''}
+                Avg Price {sortConfig.key === 'averagePrice' ? (sortConfig.direction === 'asc' ? '▲' : '▼') : ''}
               </th>
               <th onClick={() => handleSort('longestNegativePriceStreak')} style={{ cursor: 'pointer' }}>
-                Longest Negative Price Streak (hours) {sortConfig.key === 'longestNegativePriceStreak' ? (sortConfig.direction === 'asc' ? '▲' : '▼') : ''}
+                Longest Negative Price Streak (h) {sortConfig.key === 'longestNegativePriceStreak' ? (sortConfig.direction === 'asc' ? '▲' : '▼') : ''}
               </th>
             </tr>
           </thead>
@@ -79,12 +97,18 @@ function AggregatesTable({ aggregates = [] }) {
               <tr key={item.date}>
                 <td>
                   <Link to={`/date-hourly/${item.date}`} className="text-decoration-none">
-                    {item.date}
+                    {formatDate(item.date)}
                   </Link>
                 </td>
                 <td>{Number(item.totalConsumption || 0).toFixed(2)}</td>
                 <td>{Number(item.totalProduction || 0).toFixed(2)}</td>
-                <td>{Number(item.averagePrice || 0).toFixed(2)}</td>
+                <td>
+                  {Number(item.averagePrice || 0) < 0 ? (
+                    <span className="badge bg-success">{Number(item.averagePrice).toFixed(2)}</span>
+                  ) : (
+                    Number(item.averagePrice).toFixed(2)
+                  )}
+                </td>
                 <td>{item.longestNegativePriceStreak || 0}</td>
               </tr>
             ))}
@@ -92,8 +116,10 @@ function AggregatesTable({ aggregates = [] }) {
         </table>
       </div>
 
-      {/* Pagination */}
-      <Pagination currentPage={currentPage} totalPages={totalPages} onPageChange={handlePageChange} />
+      {/* Pagination (hidden if only 1 page) */}
+      {totalPages > 1 && (
+        <Pagination currentPage={currentPage} totalPages={totalPages} onPageChange={handlePageChange} />
+      )}
     </section>
   );
 }
