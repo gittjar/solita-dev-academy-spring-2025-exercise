@@ -8,8 +8,9 @@ function Navbar() {
   return (
     <nav className="navbar navbar-expand-lg navbar-light bg-light mb-4">
       <div className="container d-flex justify-content-between align-items-center">
-        <Link className="navbar-brand" to="/">
+        <Link className="navbar-brand" to="/mainpage">
           <h2 className="mb-0">Electricity Data Viewer</h2>
+          
         </Link>
 
         <div className="d-flex align-items-center">

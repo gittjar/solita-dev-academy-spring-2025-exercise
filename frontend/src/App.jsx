@@ -4,6 +4,7 @@ import Navbar from './components/Navbar';
 import AggregatesTable from './components/AggregatesTable';
 import AllHoursDataTable from './components/AllHoursDataTable';
 import DateHourly from './components/DateHourly';
+import MainPage from './components/MainPage';
 
 function App() {
   const [data, setData] = useState([]);
@@ -80,7 +81,16 @@ function App() {
     path="/date-hourly/:date"
     element={<DateHourly hourlyData={data} />}
   />
+
+  <Route
+    path="/mainpage"
+    element={
+      <MainPage
+      />
+    }
+  />
 </Routes>
+
     </Router>
   );
 }
