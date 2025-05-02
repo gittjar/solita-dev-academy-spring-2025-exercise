@@ -7,6 +7,7 @@ function DateHourly({ hourlyData = [] }) {
   const { date } = useParams();
   const [sortConfig, setSortConfig] = useState({ key: 'hour', direction: 'asc' });
   const [showChart, setShowChart] = useState(false);
+  const [searchTerm, setSearchTerm] = useState('');
 
   const filteredData = hourlyData.filter((item) => item.date.split('T')[0] === date);
 
@@ -32,7 +33,19 @@ function DateHourly({ hourlyData = [] }) {
     return { maxValue, minValue };
   };
 
-  const sortedData = [...filteredData].sort((a, b) => {
+  const searchFilteredData = filteredData.filter((item) => {
+    const values = [
+      formatTime(item.starttime),
+      item.consumptionamount,
+      item.productionamount,
+      item.hourlyprice,
+    ].map(String);
+    return values.some((val) =>
+      val.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+  });
+
+  const sortedData = [...searchFilteredData].sort((a, b) => {
     if (sortConfig.key === 'hour') {
       const timeA = new Date(a.starttime).getTime();
       const timeB = new Date(b.starttime).getTime();
@@ -40,12 +53,7 @@ function DateHourly({ hourlyData = [] }) {
     } else {
       const aValue = parseFloat(a[sortConfig.key]);
       const bValue = parseFloat(b[sortConfig.key]);
-
-      if (sortConfig.direction === 'asc') {
-        return aValue - bValue;
-      } else {
-        return bValue - aValue;
-      }
+      return sortConfig.direction === 'asc' ? aValue - bValue : bValue - aValue;
     }
   });
 
@@ -56,12 +64,10 @@ function DateHourly({ hourlyData = [] }) {
     }));
   };
 
-  // Logic for most expensive and cheapest hours
   const { maxValue: maxPrice, minValue: minPrice } = getMaxMinValue('hourlyprice', filteredData);
   const mostExpensive = filteredData.find(item => parseFloat(item.hourlyprice) === maxPrice);
   const cheapest = filteredData.find(item => parseFloat(item.hourlyprice) === minPrice);
 
-  // Total consumption, production and average price logic
   const validConsumptions = filteredData.map(item => Number(item.consumptionamount)).filter(val => !isNaN(val));
   const validProductions = filteredData.map(item => Number(item.productionamount)).filter(val => !isNaN(val));
   const validPrices = filteredData.map(item => Number(item.hourlyprice)).filter(val => !isNaN(val));
@@ -96,7 +102,6 @@ function DateHourly({ hourlyData = [] }) {
       if (e.key === 'ArrowLeft') handleNavigate('prev');
       if (e.key === 'ArrowRight') handleNavigate('next');
     };
-
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [date, hourlyData]);
@@ -105,7 +110,6 @@ function DateHourly({ hourlyData = [] }) {
     <section className="container mt-4">
       <h2 className="text-center mb-4">Hourly Data for {formatDate(date)}</h2>
 
-      {/* Navigation buttons with icons */}
       <div className="d-flex justify-content-center gap-2 mb-3">
         <button
           className="btn btn-outline-primary d-flex align-items-center gap-1"
@@ -123,39 +127,42 @@ function DateHourly({ hourlyData = [] }) {
         </button>
       </div>
 
-      {/* Summary Card */}
       <div className="card mb-4 shadow-sm w-50 mx-auto">
         <div className="card-body">
           <h5 className="card-title text-center">Summary</h5>
-          <p className="card-text">
-            <strong>Total Consumption:</strong> {totalConsumption.toFixed(2) / 1000} Mwh
-          </p>
-          <p className="card-text">
-            <strong>Total Production:</strong> {totalProduction.toFixed(2) / 1000} Mwh
-          </p>
-          <p className="card-text">
-            <strong>Average Price:</strong> {averagePrice.toFixed(2)} €
-          </p>
-          <p className="card-text">
-            <strong>Most Expensive Hour:</strong> {mostExpensiveHour}
-          </p>
-          <p className="card-text">
-            <strong>Cheapest Hour:</strong> {cheapestHour}
-          </p>
+          <p className="card-text"><strong>Total Consumption:</strong> {(totalConsumption / 1000).toFixed(2)} Mwh</p>
+          <p className="card-text"><strong>Total Production:</strong> {(totalProduction / 1000).toFixed(2)} Mwh</p>
+          <p className="card-text"><strong>Average Price:</strong> {averagePrice.toFixed(2)} €</p>
+          <p className="card-text"><strong>Most Expensive Hour:</strong> {mostExpensiveHour}</p>
+          <p className="card-text"><strong>Cheapest Hour:</strong> {cheapestHour}</p>
         </div>
       </div>
 
-      {/* Toggle button */}
       <div className="text-center mb-3">
         <button className="btn btn-primary" onClick={() => setShowChart(!showChart)}>
           {showChart ? 'Hide Chart View' : 'Open Chart View'}
         </button>
       </div>
 
-      {/* Chart section */}
       {showChart && <HourlyChart data={filteredData} />}
 
-      {sortedData.length > 0 ? (
+      <div className="text-center mb-3">
+        <input
+          type="text"
+          className="form-control w-50 mx-auto"
+          placeholder="Search hour, consumption, production, or price..."
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+        />
+      </div>
+
+      {filteredData.length === 0 ? (
+        <p className="text-center">No data available for {formatDate(date)}.</p>
+      ) : sortedData.length === 0 ? (
+        <p className="text-center">
+          No matches for the search term "<strong>{searchTerm}</strong>".
+        </p>
+      ) : (
         <div className="table-responsive">
           <table className="table table-bordered table-hover">
             <thead className="thead-dark">
@@ -210,8 +217,6 @@ function DateHourly({ hourlyData = [] }) {
             </tbody>
           </table>
         </div>
-      ) : (
-        <p className="text-center">No data available for {formatDate(date)}.</p>
       )}
     </section>
   );
