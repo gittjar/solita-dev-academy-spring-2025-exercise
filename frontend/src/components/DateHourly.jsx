@@ -25,19 +25,27 @@ function DateHourly({ hourlyData = [] }) {
     return `${day}.${month}.${year}`;
   };
 
+  const getMaxMinValue = (key, data) => {
+    const values = data.map(item => parseFloat(item[key])).filter(val => !isNaN(val));
+    const maxValue = Math.max(...values);
+    const minValue = Math.min(...values);
+    return { maxValue, minValue };
+  };
+
   const sortedData = [...filteredData].sort((a, b) => {
     if (sortConfig.key === 'hour') {
       const timeA = new Date(a.starttime).getTime();
       const timeB = new Date(b.starttime).getTime();
       return sortConfig.direction === 'asc' ? timeA - timeB : timeB - timeA;
     } else {
-      if (a[sortConfig.key] < b[sortConfig.key]) {
-        return sortConfig.direction === 'asc' ? -1 : 1;
+      const aValue = parseFloat(a[sortConfig.key]);
+      const bValue = parseFloat(b[sortConfig.key]);
+
+      if (sortConfig.direction === 'asc') {
+        return aValue - bValue;
+      } else {
+        return bValue - aValue;
       }
-      if (a[sortConfig.key] > b[sortConfig.key]) {
-        return sortConfig.direction === 'asc' ? 1 : -1;
-      }
-      return 0;
     }
   });
 
@@ -48,16 +56,12 @@ function DateHourly({ hourlyData = [] }) {
     }));
   };
 
-  // Correct logic for most expensive and cheapest hours
-  const mostExpensive = filteredData.reduce(
-    (max, item) => (item.hourlyprice >= max.hourlyprice ? item : max),
-    { hourlyprice: -Infinity, starttime: null }
-  );
-  const cheapest = filteredData.reduce(
-    (min, item) => (item.hourlyprice <= min.hourlyprice ? item : min),
-    { hourlyprice: Infinity, starttime: null }
-  );
+  // Logic for most expensive and cheapest hours
+  const { maxValue: maxPrice, minValue: minPrice } = getMaxMinValue('hourlyprice', filteredData);
+  const mostExpensive = filteredData.find(item => parseFloat(item.hourlyprice) === maxPrice);
+  const cheapest = filteredData.find(item => parseFloat(item.hourlyprice) === minPrice);
 
+  // Total consumption, production and average price logic
   const validConsumptions = filteredData.map(item => Number(item.consumptionamount)).filter(val => !isNaN(val));
   const validProductions = filteredData.map(item => Number(item.productionamount)).filter(val => !isNaN(val));
   const validPrices = filteredData.map(item => Number(item.hourlyprice)).filter(val => !isNaN(val));
@@ -69,14 +73,10 @@ function DateHourly({ hourlyData = [] }) {
     : 0;
 
   const mostExpensiveHour =
-    mostExpensive.starttime && mostExpensive.hourlyprice !== -Infinity
-      ? `${formatTime(mostExpensive.starttime)} (${Number(mostExpensive.hourlyprice).toFixed(2)} €)`
-      : 'N/A';
+    mostExpensive ? `${formatTime(mostExpensive.starttime)} (${Number(mostExpensive.hourlyprice).toFixed(2)} €)` : 'N/A';
 
   const cheapestHour =
-    cheapest.starttime && cheapest.hourlyprice !== Infinity
-      ? `${formatTime(cheapest.starttime)} (${Number(cheapest.hourlyprice).toFixed(2)} €)`
-      : 'N/A';
+    cheapest ? `${formatTime(cheapest.starttime)} (${Number(cheapest.hourlyprice).toFixed(2)} €)` : 'N/A';
 
   const handleNavigate = (direction) => {
     const currentDate = new Date(date);
@@ -105,8 +105,8 @@ function DateHourly({ hourlyData = [] }) {
     <section className="container mt-4">
       <h2 className="text-center mb-4">Hourly Data for {formatDate(date)}</h2>
 
-            {/* Navigation buttons with icons */}
-            <div className="d-flex justify-content-center gap-2 mb-3">
+      {/* Navigation buttons with icons */}
+      <div className="d-flex justify-content-center gap-2 mb-3">
         <button
           className="btn btn-outline-primary d-flex align-items-center gap-1"
           onClick={() => handleNavigate('prev')}
@@ -144,8 +144,6 @@ function DateHourly({ hourlyData = [] }) {
           </p>
         </div>
       </div>
-
-
 
       {/* Toggle button */}
       <div className="text-center mb-3">
