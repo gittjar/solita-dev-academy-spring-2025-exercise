@@ -1,14 +1,40 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import Pagination from './Pagination';
 
 function AggregatesTable({ aggregates = [] }) {
   const [currentPage, setCurrentPage] = useState(1);
   const [sortConfig, setSortConfig] = useState({ key: 'date', direction: 'asc' });
+  const [filterText, setFilterText] = useState('');
+  const [selectedYears, setSelectedYears] = useState([]); // Allow multiple years
   const itemsPerPage = 10;
 
+  // Extract unique years from the data
+  const years = useMemo(() => {
+    const uniqueYears = new Set(aggregates.map((item) => new Date(item.date).getFullYear()));
+    return Array.from(uniqueYears).sort((a, b) => b - a);
+  }, [aggregates]);
+
+  // Handle year selection (toggle year in the selectedYears array)
+  const handleYearToggle = (year) => {
+    setSelectedYears((prev) =>
+      prev.includes(year) ? prev.filter((y) => y !== year) : [...prev, year]
+    );
+    setCurrentPage(1);
+  };
+
+  // Filter logic
+  const filteredAggregates = aggregates.filter((item) => {
+    const matchesFilter =
+      item.date.includes(filterText) || item.totalConsumption.toString().includes(filterText);
+    const itemYear = new Date(item.date).getFullYear();
+    const matchesYear =
+      selectedYears.length === 0 || selectedYears.includes(itemYear); // Match if no year is selected or matches selected years
+    return matchesFilter && matchesYear;
+  });
+
   // Sort logic
-  const sortedAggregates = [...aggregates].sort((a, b) => {
+  const sortedAggregates = [...filteredAggregates].sort((a, b) => {
     if (a[sortConfig.key] < b[sortConfig.key]) return sortConfig.direction === 'asc' ? -1 : 1;
     if (a[sortConfig.key] > b[sortConfig.key]) return sortConfig.direction === 'asc' ? 1 : -1;
     return 0;
@@ -31,14 +57,6 @@ function AggregatesTable({ aggregates = [] }) {
     setCurrentPage(1);
   };
 
-  const handlePrevDay = () => {
-    if (currentPage > 1) setCurrentPage((prev) => prev - 1);
-  };
-
-  const handleNextDay = () => {
-    if (currentPage < totalPages) setCurrentPage((prev) => prev + 1);
-  };
-
   const formatDate = (dateStr) => {
     const options = { year: 'numeric', month: 'short', day: 'numeric' };
     return new Date(dateStr).toLocaleDateString(undefined, options);
@@ -48,25 +66,42 @@ function AggregatesTable({ aggregates = [] }) {
     <section className="container mt-4">
       <h2 className="text-center mb-4">📊 Daily Aggregates</h2>
 
+      {/* Filter Input */}
+      <div className="mb-3 text-center w-50 mx-auto">
+        <input
+          type="text"
+          className="form-control"
+          placeholder="Filter by date or consumption..."
+          value={filterText}
+          onChange={(e) => setFilterText(e.target.value)}
+        />
+      </div>
+
+      {/* Year Selection Buttons */}
+      <div className="mb-3 text-center">
+        {years.map((year) => (
+          <button
+            key={year}
+            className={`btn btn-outline-primary mx-1 ${
+              selectedYears.includes(year) ? 'active' : ''
+            }`}
+            onClick={() => handleYearToggle(year)}
+          >
+            {year}
+          </button>
+        ))}
+      </div>
+
       {/* Summary Card */}
       <div className="card mb-4 w-50 mx-auto shadow-sm">
         <div className="card-body text-center">
           <h5 className="card-title">Summary</h5>
           <p className="card-text">
-            <strong>Total Records:</strong> {aggregates.length}
+            <strong>Total Records:</strong> {filteredAggregates.length}
           </p>
           <p className="card-text">
             <strong>Page:</strong> {currentPage} of {totalPages}
           </p>
-
-          <div className="btn-group mt-2">
-            <button className="btn btn-outline-primary" onClick={handlePrevDay} disabled={currentPage === 1}>
-              ⬅️ Previous
-            </button>
-            <button className="btn btn-outline-primary" onClick={handleNextDay} disabled={currentPage === totalPages}>
-              Next ➡️
-            </button>
-          </div>
         </div>
       </div>
 
@@ -79,16 +114,24 @@ function AggregatesTable({ aggregates = [] }) {
                 Date {sortConfig.key === 'date' ? (sortConfig.direction === 'asc' ? '▲' : '▼') : ''}
               </th>
               <th onClick={() => handleSort('totalConsumption')} style={{ cursor: 'pointer' }}>
-                Total Consumption {sortConfig.key === 'totalConsumption' ? (sortConfig.direction === 'asc' ? '▲' : '▼') : ''}
+                Total Consumption{' '}
+                {sortConfig.key === 'totalConsumption' ? (sortConfig.direction === 'asc' ? '▲' : '▼') : ''}
               </th>
               <th onClick={() => handleSort('totalProduction')} style={{ cursor: 'pointer' }}>
-                Total Production {sortConfig.key === 'totalProduction' ? (sortConfig.direction === 'asc' ? '▲' : '▼') : ''}
+                Total Production{' '}
+                {sortConfig.key === 'totalProduction' ? (sortConfig.direction === 'asc' ? '▲' : '▼') : ''}
               </th>
               <th onClick={() => handleSort('averagePrice')} style={{ cursor: 'pointer' }}>
-                Avg Price {sortConfig.key === 'averagePrice' ? (sortConfig.direction === 'asc' ? '▲' : '▼') : ''}
+                Avg Price{' '}
+                {sortConfig.key === 'averagePrice' ? (sortConfig.direction === 'asc' ? '▲' : '▼') : ''}
               </th>
               <th onClick={() => handleSort('longestNegativePriceStreak')} style={{ cursor: 'pointer' }}>
-                Longest Negative Price Streak (h) {sortConfig.key === 'longestNegativePriceStreak' ? (sortConfig.direction === 'asc' ? '▲' : '▼') : ''}
+                Longest Negative Price Streak (h){' '}
+                {sortConfig.key === 'longestNegativePriceStreak'
+                  ? sortConfig.direction === 'asc'
+                    ? '▲'
+                    : '▼'
+                  : ''}
               </th>
             </tr>
           </thead>

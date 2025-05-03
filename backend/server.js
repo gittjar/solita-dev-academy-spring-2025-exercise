@@ -1,5 +1,5 @@
 const express = require('express');
-const cors = require('cors'); // Import CORS
+const cors = require('cors'); 
 const pool = require('./db');
 const path = require('path');
 
