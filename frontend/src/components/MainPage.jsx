@@ -1,4 +1,5 @@
 import React from 'react';
+import './styles.css'; // Import the CSS file for styling
 
 const MainPage = () => {
   return (
@@ -8,22 +9,22 @@ const MainPage = () => {
         <div className="carousel-inner rounded-3 shadow-sm">
           <div className="carousel-item active">
             <img
-              src="https://fakeimg.pl/600x400/fef7ff/fa78fa?text=Placeholder1"
-              className="d-block w-100"
+              src="../src/assets/image1.jpg"
+              className="d-block w-100 carousel-image"
               alt="Image 1"
             />
           </div>
           <div className="carousel-item">
             <img
-              src="https://fakeimg.pl/600x400/000111/fa78fa?text=Placeholder2"
-              className="d-block w-100"
+              src="../src/assets/image2.jpg"
+              className="d-block w-100 carousel-image"
               alt="Image 2"
             />
           </div>
           <div className="carousel-item">
             <img
-              src="https://fakeimg.pl/600x400/fef0cc/ccc111?text=Placeholder3"
-              className="d-block w-100"
+              src="../src/assets/image3.jpg"
+              className="d-block w-100 carousel-image"
               alt="Image 3"
             />
           </div>

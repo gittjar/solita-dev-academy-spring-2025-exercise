@@ -1,10 +1,13 @@
 const express = require('express');
-const cors = require('cors'); 
+const cors = require('cors');
 const pool = require('./db');
 const path = require('path');
 
 const app = express();
+// Localhost port for development
 const port = 3000;
+// Docker port for production = 3001
+
 
 // Enable CORS with explicit configuration
 app.use(cors({
@@ -12,6 +15,9 @@ app.use(cors({
   methods: ['GET', 'POST', 'PUT', 'DELETE'],
   allowedHeaders: ['Content-Type', 'Authorization'],
 }));
+
+// Serve static files from the current directory
+app.use(express.static(__dirname));
 
 // Root route
 app.get('/', (req, res) => {
@@ -37,8 +43,8 @@ app.get('/data', async (req, res) => {
 // Start the server
 app.listen(port, () => {
   console.log(`                                           
-🚀 Backend Running in Docker on Port: ${port} 
-📡 Access API at: http://localhost:${port}    
+Server is running at http://localhost:${port} and serving static files from ${__dirname}...`);
+  console.log(`
 
   `);
 });
