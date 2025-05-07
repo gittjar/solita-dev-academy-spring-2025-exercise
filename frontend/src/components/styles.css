@@ -1,5 +1,0 @@
-/* Ensure all carousel images have the same size */
-.carousel-image {
-    height: 600px; /* Set a fixed height for the images */
-    object-fit: cover; /* Ensures the image covers the area without distortion */
-  }

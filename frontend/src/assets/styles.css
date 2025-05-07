@@ -1,0 +1,22 @@
+/* Ensure all carousel images have the same size */
+.carousel-image {
+  height: 600px; /* Set a fixed height for the images */
+  object-fit: cover; /* Ensures the image covers the area without distortion */
+}
+
+/* Customize the text overlay */
+.carousel-caption {
+  background-color: rgba(0, 0, 0, 0.5); /* Semi-transparent black background */
+  padding: 10px;
+  border-radius: 10px;
+}
+
+.carousel-caption h5 {
+  font-size: 1.5rem;
+  color: #fff; /* White text for the title */
+}
+
+.carousel-caption p {
+  font-size: 1rem;
+  color: #ddd; /* Light gray text for the description */
+}
