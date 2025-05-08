@@ -37,8 +37,10 @@ Ensure you have the following installed on your system:
 <hr>
 
 solita-dev-academy-spring-2025-exercise/ <br>
-├── backend/       # Backend service (Node.js + Express) <br>
-├── frontend/      # Frontend service (React + Vite) <br>
-├── db/            # Database initialization scripts <br>
+├── backend/            # Backend service (Node.js + Express) <br>
+├── frontend/           # Frontend service (React + Vite) <br>
+├── [init-db.tar.gz]    # Database initialization<br>
 ├── [docker-compose.yml] <br>
 └── [README.md] <br>
+
+<hr>

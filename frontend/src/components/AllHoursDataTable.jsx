@@ -113,6 +113,7 @@ function AllHoursDataTable({ data }) {
           <button
             key={year}
             className={`btn btn-sm me-2 mb-2 ${selectedYears.includes(year) ? 'btn-primary' : 'btn-outline-primary'}`}
+            
             onClick={() => toggleYear(year)}
           >
             {year}
